@@ -7,9 +7,20 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class DeviceManager implements DeviceManagerInterface
 {
-    public function __construct(EntityManagerInterface $entityManager)
+    /**
+     * @var EntityManagerInterface $entityManager
+     */
+    private $entityManager;
+
+    /**
+     * @var string $deviceClassManaged
+     */
+    private $deviceClassManaged;
+
+    public function __construct(EntityManagerInterface $entityManager, string $deviceClassManaged)
     {
-        //
+        $this->entityManager = $entityManager;
+        $this->deviceClassManaged = $deviceClassManaged;
     }
 
     /**
@@ -17,7 +28,38 @@ class DeviceManager implements DeviceManagerInterface
      */
     public function getRepository(): ObjectRepository
     {
-        // TODO: Implement getRepository() method.
+        return $this->entityManager->getRepository($this->getDeviceClassManaged());
+    }
+
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @return DeviceManagerInterface
+     */
+    public function setEntityManager(EntityManagerInterface $entityManager) : DeviceManagerInterface
+    {
+        $this->entityManager = $entityManager;
+        return $this;
+    }
+
+    public function getDeviceClassManaged() : string
+    {
+        return $this->deviceClassManaged;
+    }
+
+    public function setDeviceClassManaged(string $deviceClassManaged) : DeviceManagerInterface
+    {
+        $this->deviceClassManaged = $deviceClassManaged;
+        return $this;
+    }
+
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param string $class
+     * @return DeviceManagerInterface
+     */
+    public static function newInstance(EntityManagerInterface $entityManager, string $deviceClassManaged, string $managerClass = DeviceManager::class): DeviceManagerInterface
+    {
+        return new $managerClass($entityManager, $deviceClassManaged);
     }
 
     /**
@@ -27,25 +69,8 @@ class DeviceManager implements DeviceManagerInterface
      */
     public function create($uuid, $platform): DeviceInterface
     {
-        // TODO: Implement create() method.
-    }
-
-    /**
-     * @param DeviceInterface $device
-     * @return mixed
-     */
-    public function remove(DeviceInterface $device)
-    {
-        // TODO: Implement remove() method.
-    }
-
-    /**
-     * @param DeviceInterface $device
-     * @return mixed|DeviceInterface
-     */
-    public function refresh(DeviceInterface $device): DeviceInterface
-    {
-        // TODO: Implement refresh() method.
+        $class = $this->getDeviceClassManaged();
+        return new $class($uuid, $platform);
     }
 
     /**
@@ -55,7 +80,32 @@ class DeviceManager implements DeviceManagerInterface
      */
     public function save(DeviceInterface $device, bool $flush = true): DeviceInterface
     {
-        // TODO: Implement save() method.
+        $this->entityManager->persist($device);
+        if ($flush) {
+            $this->entityManager->flush();
+        }
+        return $device;
+    }
+
+    /**
+     * @param DeviceInterface $device
+     * @return mixed
+     */
+    public function remove(DeviceInterface $device, bool $flush = true)
+    {
+        $this->entityManager->remove($device);
+        if ($flush) {
+            $this->entityManager->flush();
+        }
+    }
+
+    /**
+     * @param DeviceInterface $device
+     * @return mixed|DeviceInterface
+     */
+    public function refresh(DeviceInterface $device): DeviceInterface
+    {
+        $this->entityManager->refresh($device);
     }
 
     /**
@@ -63,7 +113,7 @@ class DeviceManager implements DeviceManagerInterface
      */
     public function getAll(): array
     {
-        // TODO: Implement getAll() method.
+        return $this->getRepository()->findAll();
     }
 
     /**
@@ -72,7 +122,7 @@ class DeviceManager implements DeviceManagerInterface
      */
     public function findByPlatform(array $types): array
     {
-        // TODO: Implement findByPlatform() method.
+        return $this->getRepository()->findBy(['type' => $types]);
     }
 
     /**
@@ -81,6 +131,6 @@ class DeviceManager implements DeviceManagerInterface
      */
     public function findByUUID(string $uuid): DeviceInterface
     {
-        // TODO: Implement findByUUID() method.
+        return $this->getRepository()->findBy(['uuid' => $uuid]);
     }
 }

@@ -17,21 +17,30 @@ class ContextManager {
     private $contexts = [];
 
     public function __construct(
-        array $android,
-        array $ios,
-        array $device,
+        $android_server_key,
+        $android_fcm_server,
+        $ios_push_passphrase,
+        $ios_push_certificate,
+        $ios_apns_server,
+        $ios_apns_topic,
+        $ios_protocol,
+        $device_class,
+        $device_manager,
         array $contexts = []
     )
     {
         $this->createContexts($contexts);
 
         $this->configuration = new Configuration([
-            'android_server_key'    => $android['server_key'],
-            'android_fcm_server'    => $android['fcm_server'],
-            'ios_push_passphrase'   => $ios['push_passphrase'],
-            'ios_push_certificate'  => $ios['push_certificate'],
-            'ios_apns_server'       => $ios['apns_server'],
-            'device_class_name'     => $device['class'],
+            'android_server_key'    => $android_server_key ?: '',
+            'android_fcm_server'    => $android_fcm_server ?: '',
+            'ios_push_passphrase'   => $ios_push_passphrase ?: '',
+            'ios_push_certificate'  => $ios_push_certificate ?: '',
+            'ios_apns_server'       => $ios_apns_server ?: '',
+            'ios_apns_topic'        => $ios_apns_topic ?: '',
+            'ios_protocol'          => $ios_protocol ?: '',
+            'device_class'          => $device_class ?: '',
+            'device_manager'        => $device_manager ?: '',
             'contexts'              => $this->contexts,
         ]);
     }
@@ -53,22 +62,33 @@ class ContextManager {
 
     /**
      * @param string $name
-     * @return Context
+     * @return mixed
      */
-    public function getContext(string $name) : Context {
+    public function getContext(string $name)
+    {
         $filtered = array_filter($this->contexts, function(Context $item) use($name) {
             return $item->getName() == $name;
         });
 
-        return count($filtered) > 0 ? $filtered[0] : null;
+        return count($filtered) > 0 ? current($filtered) : null;
     }
 
     /**
      * @param string $name
      * @return array
      */
-    public function getContexts() : array {
+    public function getContexts() : array
+    {
         return $this->contexts;
+    }
+
+    /**
+     * Guessing the context consists on returning the first context found
+     * @return Context
+     */
+    public function guessContext() : Context
+    {
+        return (count($this->contexts)) ? $this->contexts[0] : null;
     }
 
 

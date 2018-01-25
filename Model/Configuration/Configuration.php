@@ -34,9 +34,24 @@ class Configuration {
     private $iosApnsServer;
 
     /**
+     * @var string $iosApnsTopic
+     */
+    private $iosApnsTopic;
+
+    /**
+     * @var string $iosProtocol
+     */
+    private $iosProtocol;
+
+    /**
      * @var string $deviceClassName
      */
     private $deviceClassName;
+
+    /**
+     * @var string $managerClassName
+     */
+    private $managerClassName;
 
     /**
      * @var array $contexts
@@ -51,8 +66,11 @@ class Configuration {
         $this->setIosPushPassPhrase($parameters['ios_push_passphrase']);
         $this->setIosPushCertificate($parameters['ios_push_certificate']);
         $this->setIosApnsServer($parameters['ios_apns_server']);
+        $this->setIosApnsTopic($parameters['ios_apns_topic']);
+        $this->setIosProtocol($parameters['ios_protocol']);
 
-        $this->setDeviceClassName($parameters['device_class_name']);
+        $this->setDeviceClassName($parameters['device_class']);
+        $this->setManagerClassName($parameters['device_manager']);
         $this->setContexts($parameters['contexts']);
     }
 
@@ -144,6 +162,38 @@ class Configuration {
     /**
      * @return string
      */
+    public function getIosApnsTopic(): string
+    {
+        return $this->iosApnsTopic;
+    }
+
+    /**
+     * @param string $iosApnsTopic
+     */
+    public function setIosApnsTopic(string $iosApnsTopic)
+    {
+        $this->iosApnsTopic = $iosApnsTopic;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIosProtocol(): string
+    {
+        return $this->iosProtocol;
+    }
+
+    /**
+     * @param string $iosProtocol
+     */
+    public function setIosProtocol(string $iosProtocol)
+    {
+        $this->iosProtocol = $iosProtocol;
+    }
+
+    /**
+     * @return string
+     */
     public function getDeviceClassName(): string
     {
         return $this->deviceClassName;
@@ -156,6 +206,22 @@ class Configuration {
     {
         $this->deviceClassName = $deviceClassName;
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getManagerClassName(): string
+    {
+        return $this->managerClassName;
+    }
+
+    /**
+     * @param string $managerClassName
+     */
+    public function setManagerClassName(string $managerClassName)
+    {
+        $this->managerClassName = $managerClassName;
     }
 
     /**

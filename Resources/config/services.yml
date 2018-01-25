@@ -1,0 +1,19 @@
+services:
+    ra_notifications.context.manager:
+        class: RA\NotificationsBundle\Model\Context\ContextManager
+        arguments:
+            - %ra_notifications.android.server_key%
+            - %ra_notifications.android.gcm_server%
+            - %ra_notifications.ios.push_passphrase%
+            - %ra_notifications.ios.push_certificate%
+            - %ra_notifications.ios.apns_server%
+            - %ra_notifications.ios.apns_topic%
+            - %ra_notifications.ios.protocol%
+            - %ra_notifications.device.class%
+            - %ra_notifications.device.manager%
+            - %ra_notifications.contexts%
+
+
+    ra_notifications.device.manager:
+        class:  RA\NotificationsBundle\Model\Device\DeviceManager
+        arguments: ["@doctrine.orm.entity_manager", "%ra_notifications.device.class%"]
