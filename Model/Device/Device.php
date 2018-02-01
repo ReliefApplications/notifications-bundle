@@ -68,7 +68,7 @@ abstract class Device implements DeviceInterface
     /**
      * @param string $uuid
      */
-    public function setUuid(string $uuid)
+    public function setUuid($uuid)
     {
         $this->uuid = $uuid;
         return $this;
@@ -85,7 +85,7 @@ abstract class Device implements DeviceInterface
     /**
      * @param string $token
      */
-    public function setToken(string $token)
+    public function setToken($token)
     {
         $this->token = $token;
         return $this;
@@ -102,7 +102,7 @@ abstract class Device implements DeviceInterface
     /**
      * @param int $type
      */
-    public function setType(int $type)
+    public function setType($type)
     {
         $this->type = $type;
         return $this;

@@ -13,15 +13,15 @@ interface DeviceInterface
 {
     public function getUuid();
 
-    public function setUuid(string $uuid);
+    public function setUuid($uuid);
 
     public function getToken();
 
-    public function setToken(string $token);
+    public function setToken($token);
 
     public function getType();
 
-    public function setType(int $type);
+    public function setType($type);
 
     function isAndroid() : bool;
 
