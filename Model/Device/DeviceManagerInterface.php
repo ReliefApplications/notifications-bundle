@@ -80,12 +80,12 @@ interface DeviceManagerInterface
      * @param string $uuid
      * @return mixed
      */
-    public function findByUUID(string $uuid) : ?DeviceInterface;
+    public function findByUUID(string $uuid) ;
 
     /**
      * @param string $token
      * @return mixed
      */
-    public function findByToken(string $uuid) : ?DeviceInterface;
+    public function findByToken(string $uuid) ;
 
 }

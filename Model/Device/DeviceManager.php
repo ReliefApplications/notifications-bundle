@@ -129,7 +129,7 @@ class DeviceManager implements DeviceManagerInterface
      * @param string $uuid
      * @return mixed
      */
-    public function findByUUID(string $uuid): ?DeviceInterface
+    public function findByUUID(string $uuid)
     {
         return $this->getRepository()->findOneBy(['uuid' => $uuid]);
     }
@@ -138,7 +138,7 @@ class DeviceManager implements DeviceManagerInterface
      * @param string $token
      * @return mixed
      */
-    public function findByToken(string $token): ?DeviceInterface
+    public function findByToken(string $token)
     {
         return $this->getRepository()->findOneBy(['token' => $token]);
     }
