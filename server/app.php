@@ -23,9 +23,9 @@ $logger = new Logger('name');
 $logger->pushHandler(new Monolog\Handler\StreamHandler('log/app.log', Monolog\Logger::WARNING));
 $logger->addWarning('Foo');
 
-// Declare the context with required parameters
+// Declare the context with required parameters (see gist : https://gist.github.com/blixit/c6660d2a8a57e0d519e72c1ee3c89293)
 $contextManager = new ContextManager(
-    'AIzaSyB0a4l5R9PgEhZwuzknK7UE7qRGxYiuqP4',
+    'AIzaSyB0a4l5R9PgEhZwuzknK7UE7qRGxYiuqP4', 
     'fcm.googleapis.com',
     '__',
     '__',
@@ -62,7 +62,10 @@ $body           = new NotificationBody();
 $body->setTitle("New features here ! Come take a look !!");
 $body->setBody("We just developed a new feature that should interest you");
 
-// Declare a token (took from the frontend app)
+/**
+ * Declare a token (took from the frontend app)
+ * For demonstration purpose, we hardcoded the token, on production, please fetch your array of tokens from the Firebase database.
+ */
 $token = 'd_GI27yWSYM:APA91bGDjnrA9mu3nYxeNfaKhASxjvkk_C9oQgDOp9evJtXXcoNoxS0JTXi_qRWxk1-_WYGFGyv_-zmXMpoKoQpyzikykNPDJyByjamXOo0dobmKJmjc3-Hc7THViTEgIkWLABXJ5rIL';
 // Declare a device with this token
 $singleDevice = (new CustomDevice())
@@ -77,8 +80,8 @@ try{
 
     //push to a single device
     $count = $pusher->pushToOne($body, $singleDevice, "ctx_americas");
-//        $count = $pusher->pushToOne($body, $singleDevice, "ctx_americas");
-//        $count = $pusher->pushToOne($body, $targetsMany[0], "ctx_americas");
+    //$count = $pusher->pushToOne($body, $singleDevice, "ctx_americas");
+    //$count = $pusher->pushToOne($body, $targetsMany[0], "ctx_americas");
 
     //push to a group or a topic
     $targetsGroup = '/topics/anytopic';

@@ -78,14 +78,14 @@ interface DeviceManagerInterface
 
     /**
      * @param string $uuid
-     * @return DeviceInterface
+     * @return mixed
      */
-    public function findByUUID(string $uuid) : DeviceInterface;
+    public function findByUUID(string $uuid) : ?DeviceInterface;
 
     /**
      * @param string $token
-     * @return DeviceInterface
+     * @return mixed
      */
-    public function findByToken(string $uuid) : DeviceInterface;
+    public function findByToken(string $uuid) : ?DeviceInterface;
 
 }
