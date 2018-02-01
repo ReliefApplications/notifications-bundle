@@ -131,6 +131,15 @@ class DeviceManager implements DeviceManagerInterface
      */
     public function findByUUID(string $uuid): DeviceInterface
     {
-        return $this->getRepository()->findBy(['uuid' => $uuid]);
+        return $this->getRepository()->findOneBy(['uuid' => $uuid]);
+    }
+
+    /**
+     * @param string $token
+     * @return DeviceInterface
+     */
+    public function findByToken(string $token): DeviceInterface
+    {
+        return $this->getRepository()->findOneBy(['token' => $token]);
     }
 }

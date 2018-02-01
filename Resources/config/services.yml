@@ -17,3 +17,8 @@ services:
     ra_notifications.device.manager:
         class:  RA\NotificationsBundle\Model\Device\DeviceManager
         arguments: ["@doctrine.orm.entity_manager", "%ra_notifications.device.class%"]
+
+
+    ra_notifications.pusher:
+        class: RA\NotificationsBundle\Providers\Pusher
+        arguments: ["@ra_notifications.context.manager", "@logger"]

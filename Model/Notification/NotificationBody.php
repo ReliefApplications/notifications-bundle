@@ -21,6 +21,11 @@ class NotificationBody
     private $body;
 
     /**
+     * @var string $androidChannelId
+     */
+    private $androidChannelId;
+
+    /**
      *  @var Integer
      *  Badge number to display on the app
      */
@@ -64,39 +69,17 @@ class NotificationBody
 
     public function __construct()
     {
-        $this->title              = null;
-        $this->body               = null;
-        $this->badge              = null;
-        $this->uniqId              = null;
-        $this->ledColor           = null;
-        $this->image              = null;
-        $this->imageType          = null;
-        $this->category           = null;
-        $this->actions            = null;
-        $this->additionalFields   = null;
-    }
-
-    /**
-     *  Get Payload for a given device
-     *
-     *  @param Integer Payload Type (see constants)
-     *
-     *  @return String Json payload
-     */
-    public function getPayload($payload_type)
-    {
-        switch ($payload_type) {
-            case self::PAYLOAD_JSON_IOS:
-                return $this->getiOSPayload();
-                break;
-            case self::PAYLOAD_ARRAY_ANDROID:
-                return $this->getAndroidPayload();
-                break;
-
-            default:
-                throw new \Exception('Invalid Payload type : ' . $payload_type);
-                break;
-        }
+        $this->title              = "";
+        $this->body               = "";
+        $this->androidChannelId   = "";
+        $this->badge              = -1;
+        $this->uniqId             = -1;
+        $this->ledColor           = [];
+        $this->image              = "";
+        $this->imageType          = "";
+        $this->category           = "";
+        $this->actions            = [];
+        $this->additionalFields   = [];
     }
 
     private function getiOSPayload()
@@ -125,42 +108,6 @@ class NotificationBody
         }
 
         return json_encode($payload);
-    }
-
-    private function getAndroidPayload()
-    {
-        $payload = array();
-        if($this->getTitle()){
-            $payload["title"] = $this->getTitle();
-        }
-        if($this->getBody()){
-            $payload["message"] = $this->getBody();
-        }
-        if($this->getNotId()){
-            $payload["notId"] = $this->getNotId();
-        }
-        if($this->getLedColor()){
-            $payload["ledColor"] = $this->getLedColor();
-        }
-        if($this->getImage()){
-            $payload["image"] = $this->getImage();
-        }
-        if($this->getImageType()){
-            $payload["image-type"] = $this->getImageType();
-        }
-        if($this->getActions()){
-            $payload["actions"] = $this->getActions();
-        }
-        if($this->getAdditionalFields()){
-            $additionalFields = $this->getAdditionalFields();
-            foreach($additionalFields as $additionalField){
-                if(array_key_exists("key", $additionalField) && array_key_exists("value", $additionalField)){
-                    $payload[$additionalField["key"]] = $additionalField["value"];
-                }
-            }
-        }
-
-        return $payload;
     }
 
     /**
@@ -212,6 +159,22 @@ class NotificationBody
     }
 
     /**
+     * @return string
+     */
+    public function getAndroidChannelId(): string
+    {
+        return $this->androidChannelId;
+    }
+
+    /**
+     * @param string $androidChannelId
+     */
+    public function setAndroidChannelId(string $androidChannelId)
+    {
+        $this->androidChannelId = $androidChannelId;
+    }
+
+    /**
      * Get the value of Badge
      *
      * @return Integer
@@ -242,7 +205,7 @@ class NotificationBody
      */
     public function getUniqId()
     {
-        return $this->notId;
+        return $this->uniqId;
     }
 
     /**

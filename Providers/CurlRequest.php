@@ -42,7 +42,12 @@ class CurlRequest
         $ch = $this->init();
 
         switch ($platform){
-            case self::Android:  $this->setAndroidOptions($ch, $url, $headers, $fields);
+            case self::Android:
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
                 break;
             case self::IosHttp2: $this->setIosHttp2Options($ch, $url, $headers, $fields);
                 break;
@@ -50,37 +55,28 @@ class CurlRequest
                 break;
         }
 
-
-
         $response = curl_exec($ch);
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error    = curl_error($ch);
 
         switch ($httpcode) {
             case 200:
-                $this->logger->debug(sprintf('FCM server returned : ', $response));
-                $success($response, $httpcode, $this->logger);
+                $this->logger->debug(sprintf('FCM server returned : ', json_encode($response)));
+                $return = $success($response, $httpcode, $this->logger);
                 break;
             case 0:
-                $this->logger->error(sprintf('Unable to connect to the FCM server : %s', $error));
-                $fail($error, $httpcode, $this->logger);
+                $text = sprintf('Unable to connect to the FCM server : %s', $error);
+                $this->logger->error($text);
+                $return = $fail($text, $httpcode, $this->logger);
                 break;
             default:
                 $this->logger->error(sprintf('FCM server returned an error : (%d) %s ', $httpcode, $response));
-                $fail($error, $httpcode, $this->logger);
+                $return = $fail($response, $httpcode, $this->logger);
                 break;
         }
 
         curl_close($ch);
-    }
-
-    private function setAndroidOptions($curlHandler, string $url, array $headers, array $fields){
-
-        curl_setopt($curlHandler, CURLOPT_URL, $url);
-        curl_setopt($curlHandler, CURLOPT_POST, true);
-        curl_setopt($curlHandler, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($curlHandler, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curlHandler, CURLOPT_POSTFIELDS, json_encode($fields));
+        return $return;
     }
 
     private function setIosHttp2Options($curlHandler, string $url, array $headers, array $fields){

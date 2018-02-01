@@ -45,7 +45,7 @@ abstract class Device implements DeviceInterface
     /**
      * @var boolean
      *
-     * @ORM\Column(name="pushEnabled", type="boolean", nullable=true)
+     * @ORM\Column(name="pushEnabled", type="boolean", options={"default" : 1})
      */
     protected $pushEnabled = true;
 

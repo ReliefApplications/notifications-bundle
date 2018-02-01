@@ -6,10 +6,13 @@ use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Logger;
 use RA\NotificationsBundle\Model\Context\Context;
 use RA\NotificationsBundle\Model\Context\ContextManager;
+use RA\NotificationsBundle\Model\Device\Device;
 use RA\NotificationsBundle\Model\Device\DeviceInterface;
 use RA\NotificationsBundle\Model\Device\DeviceManager;
 use RA\NotificationsBundle\Model\Device\DeviceManagerInterface;
 use RA\NotificationsBundle\Model\Notification\NotificationBody;
+use RA\NotificationsBundle\Model\Pusher\AndroidPusher;
+use RA\NotificationsBundle\Model\Pusher\IosPusher;
 
 /**
  * Pusher
@@ -22,14 +25,20 @@ class Pusher{
     private $contextManager;
 
     /**
-     * @var DeviceManagerInterface $deviceManager
+     * function onSuccess($response, $status);
+     * @var \closure $onSuccess
      */
-    private $deviceManager;
+    public $onSuccess;
 
-    public function __construct(ContextManager $contextManager, DeviceManagerInterface $deviceManager, Logger $logger = null)
+    /**
+     * function onError($message, $error);
+     * @var \closure $onError
+     */
+    public $onError;
+
+    public function __construct(ContextManager $contextManager, Logger $logger = null)
     {
         $this->contextManager   = $contextManager;
-        $this->deviceManager    = $deviceManager;
         $this->logger           = $logger;
     }
 
@@ -41,53 +50,93 @@ class Pusher{
         return $this->contextManager;
     }
 
-    /**
-     * @return ContextManager
-     */
-    public function getDeviceManager(): DeviceManagerInterface
+    public function guessContext($context)
     {
-        return $this->deviceManager;
+        if(empty($context)){
+            $context = $this->getContextManager()->guessContext();
+        }else{
+            if(is_string($context)){
+                $context = $this->getContextManager()->getContext($context);
+            }
+        }
+        return $context;
     }
 
     /**
      * @param $data
-     * @param array $targets
      * @param string|Context $context The context name or an instance of Context
      * @return int
      * @throws PusherException
      */
-    public function push(NotificationBody $body, array $targets, $context = null)
+    public function pushToMany(NotificationBody $body, array $devices, $context = null)
     {
-        if(empty($context)){
-            /** @var Context $context */
-            $context = $this->getContextManager()->guessContext();
+        $context = $this->guessContext($context);
+
+        $androidTargets = [];
+        $iosTargets = [];
+
+        $this->allow($body, $devices, $context);
+
+        $this->sortDevices($devices, $androidTargets, $iosTargets);
+
+        $aPusher = new AndroidPusher($this->contextManager, $androidTargets, $this->logger);
+        $iPusher = new IosPusher($this->contextManager, $iosTargets, $this->logger);
+
+        $aPusher->onSuccess = $iPusher->onSuccess = $this->onSuccess;
+        $aPusher->onError = $iPusher->onError = $this->onError;
+
+        return $aPusher->pushToMany($body, $context) + $iPusher->pushToMany($body, $context);
+    }
+
+    /**
+     * @param NotificationBody $body
+     * @param DeviceInterface $device  a deviceInterface instance
+     * @param Context|null $context
+     */
+    public function pushToOne(NotificationBody $body, DeviceInterface $device, $context = null){
+        $context = $this->guessContext($context);
+
+        $target = ($device instanceof DeviceInterface) ? $device->getToken() : $device;
+
+        $this->allow($body, $target, $context);
+
+        $aPusher = new AndroidPusher($this->contextManager, $target, $this->logger);
+        $iPusher = new IosPusher($this->contextManager, $target, $this->logger);
+
+        $aPusher->onSuccess = $iPusher->onSuccess = $this->onSuccess;
+        $aPusher->onError = $iPusher->onError = $this->onError;
+
+        $count = 0;
+        if($device->isAndroid()){
+            $count = $aPusher->pushToOne($body, $context);
         }else{
-            if(is_string($context)){
-                /** @var Context $context */
-                $context = $this->getContextManager()->getContext($context);
-            }
+            $count = $iPusher->pushToOne($body, $context);
         }
+        return  $count;
+    }
 
-        $this->allow($body, $targets, $context);
+    public function pushToGroup(NotificationBody $body, string $targetGroup, $context = null){
+        $context = $this->guessContext($context);
 
-        $this->sortDevices($targets, $androidDevices, $iosDevices);
+        $this->allow($body, $targetGroup, $context);
 
-        $count = $this->pushAndroid($body, $androidDevices, $context);
+        $aPusher = new AndroidPusher($this->contextManager, $targetGroup, $this->logger);
+        $iPusher = new IosPusher($this->contextManager, $targetGroup, $this->logger);
 
-        $count += $this->pushIos($body, $iosDevices, $context);
+        $aPusher->onSuccess = $iPusher->onSuccess = $this->onSuccess;
+        $aPusher->onError = $iPusher->onError = $this->onError;
 
-        return $count;
+        return $aPusher->pushToGroup($body, $context) + $iPusher->pushToGroup($body, $context);
     }
 
     /**
      * @param $data
-     * @param array $targets
+     * @param string|array $targets
      * @param Context $context The set or guessed context
      * @throws PusherException if the target list or the content or the context are empty
      */
-    public function allow($data, array $targets, Context $context = null)
+    public function allow($data, $targets, Context $context = null)
     {
-
         if(empty($context)){
             throw new PusherException("The pusher requires a context");
         }
@@ -102,16 +151,20 @@ class Pusher{
     }
 
     /**
-     * Sort devices following their type.
+     * Sort devices following their type and ignore devices for which notifications are not enabled.
      * Devices without token are ignored.
      *
-     * @param array $devices
+     * @param string|array $devices
      * @param array $androidDevices
      * @param array $iosDevices
      * @return int the number of devices targetted
      */
-    public function sortDevices(array $devices, array &$androidDevices, array &$iosDevices)
+    public function sortDevices($devices, array &$androidDevices, array &$iosDevices)
     {
+        if( ! is_array($devices)){
+            return 1;
+        }
+
         $androidDevices = [];
         $iosDevices = [];
 
@@ -119,6 +172,10 @@ class Pusher{
         {
             if($device instanceof DeviceInterface)
             {
+                if( ! $device->isPushEnabled()){
+                    continue;
+                }
+
                 if(empty($device->getToken())){
                     $this->logger->warning("Tokenless device ignored. UUID : ".$device->getUUID());
                     continue;
@@ -139,76 +196,6 @@ class Pusher{
                 }
             }
         }
-    }
-
-    public function pushAndroid(NotificationBody $body, array $targets, Context $context) : int
-    {
-        if(empty($targets)){
-            return 0;
-        }
-
-        $configuration = $this->getContextManager()->getConfiguration();
-
-        $url    = sprintf("https://%s/fcm/send", $configuration->getAndroidFcmServer());
-        $apiKey = $configuration->getAndroidServerKey();
-
-        $tokens = $this->extractTokens($targets);
-        $fields = array(
-            'to'  => $tokens,
-            'data' => $body->getPayload(NotificationBody::PAYLOAD_ARRAY_ANDROID),
-        );
-        $this->logger->debug("Android Payload : " . json_encode($fields));
-
-        $headers = array(
-            'Authorization: key=' . $apiKey,
-            'Content-Type: application/json'
-        );
-
-        $curl = new CurlRequest($this->logger);
-        $deviceManager = $this->getDeviceManager();
-
-        $curl->send(CurlRequest::Android, $url, $headers, $fields, function ($response, $httpcode, Logger $logger) use($targets, $tokens, $deviceManager)
-        {
-            $response_array = json_decode($response, true);
-            foreach ($response_array['results'] as $key => $result)
-            {
-                // The user removed the app
-                if (array_key_exists('error', $result) && $result['error'] == 'NotRegistered')
-                {
-                    $deviceManager->remove($targets[$key]);
-                    $logger->debug('Device ' . $tokens[$key] . ' is no longer active, device removed from database.');
-                }
-
-                // The user removed the app
-                if (array_key_exists('error', $result) && $result['error'] == 'InvalidRegistration')
-                {
-                    $targets[$key]->setToken(null);
-                    $deviceManager->save($targets[$key]);
-                    $logger->warning('Bad device Token for ' . $tokens[$key] . ', token removed from database.');
-                }
-            }
-        }, function($error, $httpcode){
-            //the error is already logged. Here do what you want with the $error and and the http code
-        });
-
-        return count($tokens);
-    }
-
-    public function pushIos(NotificationBody $body, array $targets, Context $context) : int
-    {
-        if(empty($targets)){
-            return 0;
-        }
-
-
-        return count($targets);
-    }
-
-    public function extractTokens(array $devices) : array
-    {
-        return array_map(function (DeviceInterface $obj) {
-            return $obj->getToken();
-        }, $devices);
     }
 
 

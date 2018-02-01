@@ -82,4 +82,10 @@ interface DeviceManagerInterface
      */
     public function findByUUID(string $uuid) : DeviceInterface;
 
+    /**
+     * @param string $token
+     * @return DeviceInterface
+     */
+    public function findByToken(string $uuid) : DeviceInterface;
+
 }

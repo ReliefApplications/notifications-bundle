@@ -16,6 +16,19 @@ class ContextManager {
      */
     private $contexts = [];
 
+    /**
+     * ContextManager constructor.
+     * @param $android_server_key
+     * @param $android_fcm_server
+     * @param $ios_push_passphrase
+     * @param $ios_push_certificate
+     * @param $ios_apns_server
+     * @param $ios_apns_topic
+     * @param $ios_protocol
+     * @param $device_class
+     * @param $device_manager
+     * @param array $contexts
+     */
     public function __construct(
         $android_server_key,
         $android_fcm_server,
