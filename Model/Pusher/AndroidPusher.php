@@ -20,6 +20,13 @@ class AndroidPusher extends Pusher implements PushInterface
     public function __construct(ContextManager $contextManager, $targets, Logger $logger = null)
     {
         parent::__construct($contextManager, $targets, $logger);
+
+        $this->headers = [
+            sprintf('Authorization: key= %s', $this->configuration->getAndroidServerKey()),
+            'Content-Type: application/json'
+        ];
+
+        $this->url    = sprintf(self::ANDROID_FCM_SERVER_URL, $this->configuration->getAndroidFcmServer());
     }
 
 
@@ -39,8 +46,8 @@ class AndroidPusher extends Pusher implements PushInterface
         if($body->getUniqId()){
             $payload["notId"] = $body->getUniqId();
         }
-        if($body->getLedColor()){
-            $payload["ledColor"] = $body->getLedColor();
+        if($body->getColor()){
+            $payload["color"] = $body->getColor();
         }
         if($body->getImage()){
             $payload["image"] = $body->getImage();
@@ -97,11 +104,11 @@ class AndroidPusher extends Pusher implements PushInterface
         );
         $this->logger->debug("Android Payload : " . json_encode($fields));
 
-        $curl = new CurlRequest($this->logger);
+        $curl = new CurlRequest($this->contextManager, $this->logger);
         $success = $this->onSuccess;
         $error = $this->onError;
 
-        return $curl->send(CurlRequest::Android, $this->getUrl(), $this->getHeaders(), $fields,
+        return $curl->sendAndroid($this->getUrl(), $this->getHeaders(), $fields,
             function ($response, $httpcode, Logger $logger) use($success, $error)
             {
                 $response = json_decode($response, true);
@@ -145,9 +152,8 @@ class AndroidPusher extends Pusher implements PushInterface
 
                 return 0;
 
-            }, function($error, $httpcode){
-                //the error is already logged. Here do what you want with the $error and and the http code
-                throw new PusherException($error, $httpcode);
+            }, function($errorMessage, $httpcode) use($error) {
+                $error($errorMessage, $httpcode);
             });
     }
 
@@ -171,11 +177,11 @@ class AndroidPusher extends Pusher implements PushInterface
         );
         $this->logger->debug("Android Payload : " . json_encode($fields));
 
-        $curl = new CurlRequest($this->logger);
+        $curl = new CurlRequest($this->contextManager, $this->logger);
         $success = $this->onSuccess;
         $error = $this->onError;
 
-        return $curl->send(CurlRequest::Android, $this->getUrl(), $this->getHeaders(), $fields,
+        return $curl->sendAndroid($this->getUrl(), $this->getHeaders(), $fields,
             function ($response, $httpcode, Logger $logger) use($success, $error)
             {
                 $response = json_decode($response, true);
@@ -225,9 +231,8 @@ class AndroidPusher extends Pusher implements PushInterface
 
                 return 0;
 
-            }, function($error, $httpcode){
-                //the error is already logged. Here do what you want with the $error and and the http code
-                throw new PusherException($error, $httpcode);
+            }, function($errorMessage, $httpcode) use($error) {
+                $error($errorMessage, $httpcode);
             });
     }
 
@@ -250,11 +255,11 @@ class AndroidPusher extends Pusher implements PushInterface
         );
         $this->logger->debug("Android Payload : " . json_encode($fields));
 
-        $curl = new CurlRequest($this->logger);
+        $curl = new CurlRequest($this->contextManager, $this->logger);
         $success = $this->onSuccess;
         $error = $this->onError;
 
-        return $curl->send(CurlRequest::Android, $this->getUrl(), $this->getHeaders(), $fields,
+        return $curl->sendAndroid($this->getUrl(), $this->getHeaders(), $fields,
             function ($response, $httpcode, Logger $logger) use($success, $error)
             {
                 $response = json_decode($response, true);
@@ -285,9 +290,8 @@ class AndroidPusher extends Pusher implements PushInterface
 
                 return 0;
 
-            }, function($error, $httpcode){
-                //the error is already logged. Here do what you want with the $error and and the http code
-                throw new PusherException($error, $httpcode);
+            }, function($errorMessage, $httpcode) use($error) {
+                $error($errorMessage, $httpcode);
             });
     }
 

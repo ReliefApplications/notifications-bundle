@@ -18,6 +18,11 @@ use RA\NotificationsBundle\Model\Device\DeviceManagerInterface;
 class Pusher
 {
     const ANDROID_FCM_SERVER_URL = "https://%s/fcm/send";
+
+    const IOS_FCM_SERVER_URL = "https://%s/3/device/";
+
+    const HTTP2_ERROR_MESSAGE = "HTTP2 does not seem to be supported by CURL on your server. Please upgrade your setup (with nghttp2) or use the APNs' 'legacy' protocol.";
+
     /**
      * @var ContextManager $contextManager
      */
@@ -41,11 +46,11 @@ class Pusher
     /**
      * @var string $url
      */
-    private $url = "";
+    protected $url = "";
     /**
      * @var array $headers
      */
-    private $headers = [];
+    protected $headers = [];
 
     /**
      * @var bool $targetsFieldIsString
@@ -71,11 +76,6 @@ class Pusher
         $this->contextManager = $contextManager;
         $this->configuration = $this->contextManager->getConfiguration();
         $this->logger = $logger;
-        $this->url    = sprintf(self::ANDROID_FCM_SERVER_URL, $this->configuration->getAndroidFcmServer());
-        $this->headers = array(
-            sprintf('Authorization: key= %s', $this->configuration->getAndroidServerKey()),
-            'Content-Type: application/json'
-        );
     }
 
     /**
@@ -123,6 +123,17 @@ class Pusher
     public function getHeaders() : array
     {
         return $this->headers;
+    }
+
+    public function checkHttp2()
+    {
+        //IOS HTTP/2 APNs Protocol
+        if (!(curl_version()["features"] & CURL_VERSION_HTTP2 !== 0)) {
+            $this->logger->error(self::HTTP2_ERROR_MESSAGE);
+            return false;
+        }
+
+        return true;
     }
 
 }

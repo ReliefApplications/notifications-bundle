@@ -16,6 +16,12 @@ class NotificationBody
 
     /**
      *  @var String
+     *  SubTitle of the notification
+     */
+    private $subtitle;
+
+    /**
+     *  @var String
      *  Body of the notification
      */
     private $body;
@@ -44,6 +50,12 @@ class NotificationBody
     private $ledColor;
 
     /**
+     *  @var string
+     *  The notification's icon color, expressed in #rrggbb format
+     */
+    private $color;
+
+    /**
      *  @var String
      *  Path to the large icon
      */
@@ -62,6 +74,11 @@ class NotificationBody
     private $actions;
 
     /**
+     * @var string $clickAction
+     */
+    private $clickAction;
+
+    /**
      *  @var Array
      *  List of fields to add to the notification
      */
@@ -70,44 +87,18 @@ class NotificationBody
     public function __construct()
     {
         $this->title              = "";
+        $this->subtitle           = "";
         $this->body               = "";
         $this->androidChannelId   = "";
         $this->badge              = -1;
         $this->uniqId             = -1;
         $this->ledColor           = [];
+        $this->color              = "";
         $this->image              = "";
         $this->imageType          = "";
         $this->category           = "";
         $this->actions            = [];
         $this->additionalFields   = [];
-    }
-
-    private function getiOSPayload()
-    {
-        $payload = array(
-                "aps" => array(
-                    "alert" => array(
-                        "title" => $this->getTitle(),
-                        "body"  => $this->getBody(),
-                    ),
-                )
-        );
-        if($this->getBadge()){
-            $payload["aps"]["badge"] = $this->getBadge();
-        }
-        if($this->getCategory()){
-            $payload["aps"]["category"] = $this->getCategory();
-        }
-        if($this->getAdditionalFields()){
-            $additionalFields = $this->getAdditionalFields();
-            foreach($additionalFields as $additionalField){
-                if(array_key_exists("key", $additionalField) && array_key_exists("value", $additionalField)){
-                    $payload["aps"][$additionalField["key"]] = $additionalField["value"];
-                }
-            }
-        }
-
-        return json_encode($payload);
     }
 
     /**
@@ -130,6 +121,24 @@ class NotificationBody
     public function setTitle($title)
     {
         $this->title = $title;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSubtitle()
+    {
+        return $this->subtitle;
+    }
+
+    /**
+     * @param string $subtitle
+     */
+    public function setSubtitle($subtitle)
+    {
+        $this->subtitle = $subtitle;
 
         return $this;
     }
@@ -172,6 +181,8 @@ class NotificationBody
     public function setAndroidChannelId(string $androidChannelId)
     {
         $this->androidChannelId = $androidChannelId;
+
+        return $this;
     }
 
     /**
@@ -242,6 +253,24 @@ class NotificationBody
     public function setLedColor($ledColor)
     {
         $this->ledColor = $ledColor;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getColor()
+    {
+        return $this->color;
+    }
+
+    /**
+     * @param string $color
+     */
+    public function setColor($color)
+    {
+        $this->color = $color;
 
         return $this;
     }
@@ -350,6 +379,24 @@ class NotificationBody
     public function setActions($actions)
     {
         $this->actions = $actions;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getClickAction()
+    {
+        return $this->clickAction;
+    }
+
+    /**
+     * @param string $clickAction
+     */
+    public function setClickAction($clickAction)
+    {
+        $this->clickAction = $clickAction;
 
         return $this;
     }
