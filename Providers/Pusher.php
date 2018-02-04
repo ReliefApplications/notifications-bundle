@@ -99,7 +99,6 @@ class Pusher{
         $target = ($device instanceof DeviceInterface) ? $device->getToken() : $device;
 
         $this->allow($body, $target, $context);
-
         $aPusher = new AndroidPusher($this->contextManager, $target, $this->logger);
         $iPusher = new IosPusher($this->contextManager, $device, $this->logger);
 

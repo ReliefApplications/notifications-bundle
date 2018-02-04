@@ -85,22 +85,28 @@ class IosPusher extends Pusher implements PushInterface
      */
     function pushToOne(NotificationBody $body, $context): int
     {
-        if( ! $this->isTargetsFieldIsString()){
-            throw new PusherException("The method PushToOne() expects a token string as target");
+        $configuration = $this->contextManager->getConfiguration();
+        $deviceTokens = [$this->getTargets()->getToken()];
+
+        $curl   = new CurlRequest($this->contextManager, $this->logger);
+        $ch     = $curl->init();
+
+        // Encode the payload as JSON
+        $payload = $this->getNotificationPayload($body);
+        $this->logger->debug("iOS Payload : $payload");
+
+        if($configuration->getIosProtocol() == "http2"){
+
+            if($this->checkHttp2()){
+                throw new PusherException(self::HTTP2_ERROR_MESSAGE);
+            }
+
+            $curl->setIosHttp2Options($ch, $this->getHeaders(), $payload, $context);
+            $curl->sendIosHttp2($ch, $this->getUrl(), $this->getTargets(), $this->onSuccess, $this->onError );
+
+        }else{
+            $curl->sendIosLegacy($deviceTokens, $payload, $context, $this->onSuccess, $this->onError );
         }
-
-        if($this->checkHttp2()){
-            throw new PusherException(self::HTTP2_ERROR_MESSAGE);
-        }
-
-        $jsonFields = $this->getNotificationPayload($body);
-        $this->logger->debug("iOS Payload : $jsonFields");
-
-        $curl = new CurlRequest($this->contextManager, $this->logger);
-
-        $ch = $curl->init();
-        $curl->setIosHttp2Options($ch, $this->getHeaders(), $jsonFields);
-        $curl->sendIosHttp2($ch, $this->getUrl(), $this->getTargets(), $this->onSuccess, $this->onError );
 
         $curl->destroy($ch);
 
@@ -114,6 +120,36 @@ class IosPusher extends Pusher implements PushInterface
      */
     function pushToMany(NotificationBody $body, $context): int
     {
+        if( $this->isTargetsFieldIsString()){
+            throw new PusherException("The method pushToMany() expects an array of devices as target");
+        }
+
+        $configuration = $this->contextManager->getConfiguration();
+        $deviceTokens = $this->extractTokens($this->getTargets());
+
+        $curl   = new CurlRequest($this->contextManager, $this->logger);
+        $ch     = $curl->init();
+
+        // Encode the payload as JSON
+        $payload = $this->getNotificationPayload($body);
+        $this->logger->debug("iOS Payload : $payload");
+
+        if($configuration->getIosProtocol() == "http2"){
+
+            if($this->checkHttp2()){
+                throw new PusherException(self::HTTP2_ERROR_MESSAGE);
+            }
+
+            $curl->setIosHttp2Options($ch, $this->getHeaders(), $payload, $context);
+            foreach ($this->getTargets() as $device) {
+                $curl->sendIosHttp2($ch, $this->getUrl(), $device, $this->onSuccess, $this->onError );
+            }
+
+        }else{
+            $curl->sendIosLegacy($deviceTokens, $payload, $context, $this->onSuccess, $this->onError );
+        }
+
+        $curl->destroy($ch);
         return 0;
     }
 

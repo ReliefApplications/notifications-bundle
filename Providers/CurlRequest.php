@@ -9,6 +9,7 @@
 namespace RA\NotificationsBundle\Providers;
 
 use Monolog\Logger;
+use RA\NotificationsBundle\Model\Context\Context;
 use RA\NotificationsBundle\Model\Context\ContextManager;
 use RA\NotificationsBundle\Model\Device\DeviceInterface;
 use RA\NotificationsBundle\Model\Pusher\IosPusher;
@@ -95,10 +96,12 @@ class CurlRequest
     }
 
 
-    function setIosHttp2Options(&$ch, array $headers, string $fields)
+    function setIosHttp2Options(&$ch, array $headers, string $fields, Context $context)
     {
+        $certificate = $context->getKeys()['ios']['push_certificate'];
+
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
-        curl_setopt($ch, CURLOPT_SSLCERT, $this->contextManager->getConfiguration()->getIosPushCertificate());
+        curl_setopt($ch, CURLOPT_SSLCERT, $certificate);
         curl_setopt($ch, CURLOPT_SSLCERTPASSWD, $this->contextManager->getConfiguration()->getIosPushPassphrase());
         curl_setopt($ch, CURLOPT_HEADER, 1);
         curl_setopt($ch, CURLOPT_NOBODY, 1);
@@ -172,8 +175,77 @@ class CurlRequest
         }
     }
 
-    private function setIosLegacyOptions($curlHandler, string $url, array $headers, array $fields){
-        $ch = $this->init();
+    /**
+     * @param array $deviceTokens
+     * @param string $payload
+     * @param Context $context
+     * @param \closure $success
+     * @param \closure $fail
+     */
+    public function sendIosLegacy(array $deviceTokens, string $payload, Context $context, \closure $success, \closure $fail){
+        $configuration = $this->contextManager->getConfiguration();
+
+        $certificate = $context->getKeys()['ios']['push_certificate'];
+
+        // Check if certificate exists
+        if (file_exists($certificate))
+        {
+            $this->logger->info("iOS certificate detected");
+
+
+            // Slicing the tokens in arrays of 10 to limit damage in case of error
+            if (IosPusher::IOS_NOTIFICATION_CHAIN_LENGTH > 0) {
+                $chunked_tokens = array_chunk($deviceTokens, IosPusher::IOS_NOTIFICATION_CHAIN_LENGTH);
+            } else {
+                $chunked_tokens = array($deviceTokens);
+            }
+
+            $errors = [];
+            foreach ($chunked_tokens as $token_chain) {
+                $stream_ctx = stream_context_create();
+                stream_context_set_option($stream_ctx, 'ssl', 'local_cert', $certificate);
+                stream_context_set_option($stream_ctx, 'ssl', 'passphrase', $configuration->getIosPushPassphrase());
+
+                // Open a connection to the APNS server
+                $fp = stream_socket_client(
+                    'ssl://gateway.push.apple.com:2195',
+                    $err,
+                    $errstr,
+                    60,
+                    STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT,
+                    $stream_ctx
+                );
+
+                if (!$fp) {
+                    $text = 'Connection du APNS server failed (code ' . $err . ') : ' . $errstr;
+                    $this->logger->error($text);
+                    $errors[] = $text;
+                    continue;
+                }
+
+                foreach ($token_chain as $id) {
+                    // Build the binary notification
+                    $msg = chr(0) . pack('n', 32) . pack('H*', $id) . pack('n', strlen($payload)) . $payload;
+
+                    // Send it to the server
+                    fwrite($fp, $msg, strlen($msg));
+                }
+                $this->logger->debug('iOS notification chain sent.');
+
+                fclose($fp);
+            }
+
+            if(! empty($errors)){
+                $fail(join(', ', $errors), 500);
+            }else{
+                $success("ok", 200);
+            }
+
+        }else{
+            $text = "No iOS certificate detected.";
+            $this->logger->error($text);
+            $fail($text, 500);
+        }
 
     }
 }

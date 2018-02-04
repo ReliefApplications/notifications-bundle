@@ -96,7 +96,7 @@ class AndroidPusher extends Pusher implements PushInterface
             throw new PusherException("The method PushToOne() expects a token string as target");
         }
 
-        $token = $this->getTargets();
+        $token = $this->getTargets()->getToken();
         $fields = array(
             'to'  => $token,
             'data' => $this->getDataPayload($body),
