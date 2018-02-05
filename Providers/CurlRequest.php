@@ -123,6 +123,8 @@ class CurlRequest
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $body = substr($response, $header_size);
+        $this->logger->debug("response sent");
+        $this->logger->debug($response);
 
         switch ($httpcode) {
             case 200: // 200 Success
