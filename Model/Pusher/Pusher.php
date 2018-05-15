@@ -92,7 +92,7 @@ class Pusher
     public function setTargets($targets)
     {
         $this->targets = $targets;
-        $this->targetsFieldIsString = is_array($targets) ? false : true;
+        $this->targetsFieldIsString = is_string($targets) ? true : false;
 
         return $this;
     }
