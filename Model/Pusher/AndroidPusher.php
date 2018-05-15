@@ -96,13 +96,13 @@ class AndroidPusher extends Pusher implements PushInterface
             throw new PusherException("The method PushToOne() expects a token string as target");
         }
 
+        //get token
         if($this->isTargetsFieldIsString()){
             $token = $this->getTargets();
         }else{
             $token = $this->getTargets()->getToken();
         }
 
-        $token = $this->getTargets()->getToken();
         $fields = array(
             'to'  => $token,
             'data' => $this->getDataPayload($body),
