@@ -94,7 +94,7 @@ trait DeviceTrait
     /**
      * @return bool
      */
-    public function isPushEnabled(): bool
+    public function isPushEnabled()
     {
         return $this->pushEnabled;
     }
@@ -102,7 +102,7 @@ trait DeviceTrait
     /**
      * @param bool $pushEnabled
      */
-    public function setPushEnabled(bool $pushEnabled)
+    public function setPushEnabled($pushEnabled)
     {
         $this->pushEnabled = $pushEnabled;
         return $this;
