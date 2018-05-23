@@ -77,9 +77,9 @@ class AndroidPusher extends Pusher implements PushInterface
             'body' => $body->getBody(),
 //            'android_channel_id' => $body->getAndroidChannelId(),
 //            'icon' => $body->getIcon(),
-//            'sound' => $body->getSound(),
+            'sound' => $body->getSound(),
 //            'tag' => $body->getTag(),
-//            'color' => $body->getColor(),
+            'color' => $body->getColor(),
 //            'click_action' => $body->getClickAction(),
             'badge' => $body->getBadge(),
         ];

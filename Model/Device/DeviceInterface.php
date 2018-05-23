@@ -23,6 +23,10 @@ interface DeviceInterface
 
     public function setType($type);
 
+    public function isPushEnabled();
+    
+    public function setPushEnabled($pushEnabled);
+
     function isAndroid() : bool;
 
     function isIos() : bool;

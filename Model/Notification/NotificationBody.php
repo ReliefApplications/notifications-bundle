@@ -27,6 +27,12 @@ class NotificationBody
     private $body;
 
     /**
+     *  @var String
+     *  Sound of the notification
+     */
+    private $sound;
+
+    /**
      * @var string $androidChannelId
      */
     private $androidChannelId;
@@ -89,6 +95,7 @@ class NotificationBody
         $this->title              = "";
         $this->subtitle           = "";
         $this->body               = "";
+        $this->sound              = "";
         $this->androidChannelId   = "";
         $this->badge              = -1;
         $this->uniqId             = -1;
@@ -163,6 +170,30 @@ class NotificationBody
     public function setBody($body)
     {
         $this->body = $body;
+
+        return $this;
+    }
+
+    /**
+     * Get the sound of Body
+     *
+     * @return String
+     */
+    public function getSound()
+    {
+        return $this->sound;
+    }
+
+    /**
+     * Set the sound of Body
+     *
+     * @param String sound
+     *
+     * @return self
+     */
+    public function setSound($sound)
+    {
+        $this->sound = $sound;
 
         return $this;
     }

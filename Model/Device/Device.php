@@ -17,6 +17,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 abstract class Device implements DeviceInterface
 {
+    use DeviceTrait;
+    
     const ANDROID   = 0;
     const IOS       = 1;
     const WINDOWS   = 2;
@@ -55,74 +57,6 @@ abstract class Device implements DeviceInterface
             ->setUuid('')
             ->setPushEnabled(true)
         ;
-    }
-
-    /**
-     * @return string
-     */
-    public function getUuid()
-    {
-        return $this->uuid;
-    }
-
-    /**
-     * @param string $uuid
-     */
-    public function setUuid($uuid)
-    {
-        $this->uuid = $uuid;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getToken()
-    {
-        return $this->token;
-    }
-
-    /**
-     * @param string $token
-     */
-    public function setToken($token)
-    {
-        $this->token = $token;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * @param int $type
-     */
-    public function setType($type)
-    {
-        $this->type = $type;
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isPushEnabled(): bool
-    {
-        return $this->pushEnabled;
-    }
-
-    /**
-     * @param bool $pushEnabled
-     */
-    public function setPushEnabled(bool $pushEnabled)
-    {
-        $this->pushEnabled = $pushEnabled;
-        return $this;
     }
 
     function isAndroid() : bool {
