@@ -18,38 +18,38 @@ use Doctrine\ORM\Mapping as ORM;
 abstract class Device implements DeviceInterface
 {
     use DeviceTrait;
-    
+
     const ANDROID   = 0;
     const IOS       = 1;
     const WINDOWS   = 2;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="uuid", type="string", length=255)
-     */
-    protected $uuid = '';
+    // /**
+    //  * @var string
+    //  *
+    //  * @ORM\Column(name="uuid", type="string", length=255)
+    //  */
+    // protected $uuid = '';
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="token", type="string", length=255, nullable=true)
-     */
-    protected $token = '';
+    // /**
+    //  * @var string
+    //  *
+    //  * @ORM\Column(name="token", type="string", length=255, nullable=true)
+    //  */
+    // protected $token = '';
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="type", type="smallint", nullable=true)
-     */
-    protected $type;
+    // /**
+    //  * @var int
+    //  *
+    //  * @ORM\Column(name="type", type="smallint", nullable=true)
+    //  */
+    // protected $type;
 
-    /**
-     * @var boolean
-     *
-     * @ORM\Column(name="pushEnabled", type="boolean", options={"default" : 1})
-     */
-    protected $pushEnabled = true;
+    // /**
+    //  * @var boolean
+    //  *
+    //  * @ORM\Column(name="pushEnabled", type="boolean", options={"default" : 1})
+    //  */
+    // protected $pushEnabled = true;
 
     public function __construct()
     {
