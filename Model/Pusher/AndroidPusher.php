@@ -22,7 +22,7 @@ class AndroidPusher extends Pusher implements PushInterface
         parent::__construct($contextManager, $targets, $logger);
 
         $this->headers = [
-            sprintf('Authorization: key= %s', $this->configuration->getAndroidServerKey()),
+            sprintf('Authorization: key=%s', $this->configuration->getAndroidServerKey()),
             'Content-Type: application/json'
         ];
 
@@ -48,6 +48,9 @@ class AndroidPusher extends Pusher implements PushInterface
         }
         if($body->getColor()){
             $payload["color"] = $body->getColor();
+        }
+        if($body->getSound()){
+            $payload["sound"] = $body->getSound();
         }
         if($body->getImage()){
             $payload["image"] = $body->getImage();
