@@ -108,7 +108,7 @@ class CurlRequest
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, IosPusher::IOS_HTTP_TIMEOUT);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_POST, count($fields));
+        curl_setopt($ch, CURLOPT_POST, count(json_decode($fields, true)));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
     }
 
