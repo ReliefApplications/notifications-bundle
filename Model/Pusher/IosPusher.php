@@ -97,7 +97,7 @@ class IosPusher extends Pusher implements PushInterface
 
         if($configuration->getIosProtocol() == "http2"){
 
-            if($this->checkHttp2()){
+            if( ! $this->checkHttp2()){
                 throw new PusherException(self::HTTP2_ERROR_MESSAGE);
             }
 
