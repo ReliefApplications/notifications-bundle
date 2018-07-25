@@ -10,7 +10,7 @@
             "email": "developer2.reliefapps@gmail.com"
         }
     ],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "require": {
 		"php": ">=7.0",
         "monolog/monolog": "^1.23",
